@@ -13,7 +13,14 @@ import { Ionicons } from "@expo/vector-icons";
 import useAuth from "../hooks/useAuth";
 import { useNavigation } from "@react-navigation/core";
 import tw from "tailwind-rn";
-import { doc, serverTimestamp, setDoc } from "@firebase/firestore";
+import {
+  doc,
+  onSnapshot,
+  serverTimestamp,
+  setDoc,
+  getDoc,
+  updateDoc,
+} from "@firebase/firestore";
 import { db } from "../firebase";
 import uploadImage from "../lib/uploadImage";
 
@@ -21,6 +28,7 @@ const ModalScreen = () => {
   const { user } = useAuth();
   const navigation = useNavigation();
   const [isLoading, setIsLoading] = useState(false);
+  const [isUpdateProfile, setIsUpdateProfile] = useState(false);
   const [image, setImage] = useState(null);
   const [imageURL, setImageURL] = useState(null);
   const [job, setJob] = useState(null);
@@ -28,21 +36,59 @@ const ModalScreen = () => {
 
   const incompleteForm = !image || !job || !age || !imageURL || isLoading;
 
+  useLayoutEffect(
+    () =>
+      onSnapshot(doc(db, "users", user.uid), async (snapshot) => {
+        if (snapshot.exists()) {
+          // Retrieve profile of myself
+          const loggedInProfile = await (
+            await getDoc(doc(db, "users", user.uid))
+          ).data();
+          const { photoURL, job, age } = loggedInProfile;
+          setImage(photoURL);
+          setImageURL(photoURL);
+          setJob(job);
+          setAge(age);
+          setIsUpdateProfile(true);
+        }
+      }),
+    [user.uid]
+  );
+
   const updateUserProfile = () => {
-    setDoc(doc(db, "users", user.uid), {
-      id: user.uid,
-      displayName: user.displayName,
-      photoURL: imageURL,
-      job: job,
-      age: age,
-      timestamp: serverTimestamp(),
-    })
-      .then(() => {
-        navigation.navigate("Home");
+    if (isUpdateProfile) {
+      // Update profile
+      updateDoc(doc(db, "users", user.uid), {
+        id: user.uid,
+        displayName: user.displayName,
+        photoURL: imageURL,
+        job: job,
+        age: age,
+        timestamp: serverTimestamp(),
       })
-      .catch((error) => {
-        console.log("error: ", error.message);
-      });
+        .then(() => {
+          navigation.navigate("Home");
+        })
+        .catch((error) => {
+          console.log("error: ", error.message);
+        });
+    } else {
+      // Create profile
+      setDoc(doc(db, "users", user.uid), {
+        id: user.uid,
+        displayName: user.displayName,
+        photoURL: imageURL,
+        job: job,
+        age: age,
+        timestamp: serverTimestamp(),
+      })
+        .then(() => {
+          navigation.navigate("Home");
+        })
+        .catch((error) => {
+          console.log("error: ", error.message);
+        });
+    }
   };
 
   const pickImage = async () => {
