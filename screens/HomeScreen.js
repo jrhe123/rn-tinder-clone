@@ -27,41 +27,41 @@ import {
 import { db } from "../firebase";
 import generateId from "../lib/generateId";
 
-const DUMMY_DATA = [
-  {
-    id: 1,
-    firstName: "Roy",
-    lastName: "He",
-    job: "Software Developer",
-    photoURL:
-      "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
-    age: 32,
-  },
-  {
-    id: 2,
-    firstName: "Roy2",
-    lastName: "He2",
-    job: "Software Developer",
-    photoURL:
-      "https://www.kcl.ac.uk/ImportedImages/Schools/Business/news-images/Elisa-Russo500x499.xe1f2b6fd.jpg?w=376&h=375&crop=368,208,8,35",
-    age: 32,
-  },
-  {
-    id: 3,
-    firstName: "Roy3",
-    lastName: "He3",
-    job: "Software Developer",
-    photoURL:
-      "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
-    age: 32,
-  },
-];
-
 const HomeScreen = () => {
   const navigation = useNavigation();
   const { user, logout } = useAuth();
+  const [loadingInitial, setLoadingInitial] = useState(true);
+  const [isActiveMatch, setIsActiveMatch] = useState(false);
+  const [isNewMatch, setIsNewMatch] = useState(false);
   const [profiles, setProfiles] = useState([]);
+  const [matches, setMatches] = useState([]);
   const swipeRef = useRef();
+
+  useEffect(
+    () =>
+      onSnapshot(
+        query(
+          collection(db, "matches"),
+          where("usersMatched", "array-contains", user.uid)
+        ),
+        (snapshot) => {
+          setMatches(
+            snapshot.docs.map((doc) => ({
+              id: doc.id,
+              ...doc.data(),
+            }))
+          );
+          setLoadingInitial(false);
+        }
+      ),
+    [user]
+  );
+
+  useEffect(() => {
+    if (!loadingInitial && !isActiveMatch) {
+      setIsNewMatch(true);
+    }
+  }, [matches]);
 
   useLayoutEffect(
     () =>
@@ -148,6 +148,7 @@ const HomeScreen = () => {
             timestamp: serverTimestamp(),
           });
           // Pass matched users info
+          setIsActiveMatch(true);
           navigation.navigate("Match", {
             loggedInProfile,
             userSwiped,
@@ -182,9 +183,25 @@ const HomeScreen = () => {
           />
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => navigation.navigate("Chat")}>
-          <Ionicons name="chatbubbles-sharp" size={30} color="#FF5864" />
-        </TouchableOpacity>
+        <View style={tw("relative")}>
+          {isNewMatch && (
+            <View
+              style={tw(
+                "justify-center items-center absolute -top-1 -left-1 w-5 h-5 rounded-full bg-purple-600 z-10"
+              )}
+            >
+              <Text style={tw("text-white")}>1</Text>
+            </View>
+          )}
+          <TouchableOpacity
+            onPress={() => {
+              setIsNewMatch(false);
+              navigation.navigate("Chat");
+            }}
+          >
+            <Ionicons name="chatbubbles-sharp" size={36} color="#FF5864" />
+          </TouchableOpacity>
+        </View>
       </View>
       {/* End of Header */}
 
