@@ -164,6 +164,17 @@ const HomeScreen = () => {
     );
   };
 
+  const calculateImages = (card) => {
+    let numberOfImages = 1;
+    const object = card.optionImageURLs || {};
+    for (const [key, value] of Object.entries(object)) {
+      if (key && value) {
+        numberOfImages++;
+      }
+    }
+    return numberOfImages;
+  };
+
   return (
     <SafeAreaView style={tw("flex-1")}>
       {/* Header */}
@@ -243,6 +254,27 @@ const HomeScreen = () => {
                 key={card.id}
                 style={tw("relative bg-white h-3/4 rounded-xl")}
               >
+                <View
+                  style={{
+                    position: "absolute",
+                    top: 15,
+                    left: 15,
+                    width: 60,
+                    height: 36,
+                    zIndex: 1,
+                    backgroundColor: "rgba(0,0,0,0.3)",
+                    borderRadius: 12,
+                    justifyContent: "center",
+                    alignItems: "center",
+                    flexDirection: "row",
+                  }}
+                >
+                  <Ionicons name="image" size={24} color="#FFFFFF" />
+                  <Text style={tw("text-white text-xl")}>
+                    {" "}
+                    {calculateImages(card)}
+                  </Text>
+                </View>
                 <Image
                   style={tw("absolute top-0 h-full w-full rounded-xl")}
                   source={{ uri: card.photoURL }}
