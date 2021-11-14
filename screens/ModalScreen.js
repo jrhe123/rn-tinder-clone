@@ -23,6 +23,7 @@ import {
 } from "@firebase/firestore";
 import { db } from "../firebase";
 import uploadImage from "../lib/uploadImage";
+import OptionImageUpload from "../components/OptionImageUpload";
 
 const ModalScreen = () => {
   const { user } = useAuth();
@@ -31,6 +32,8 @@ const ModalScreen = () => {
   const [isUpdateProfile, setIsUpdateProfile] = useState(false);
   const [image, setImage] = useState(null);
   const [imageURL, setImageURL] = useState(null);
+  const [optionImages, setOptionImages] = useState([]);
+  const [optionImageURLs, setOptionImageURLs] = useState([]);
   const [job, setJob] = useState(null);
   const [age, setAge] = useState(null);
 
@@ -91,7 +94,7 @@ const ModalScreen = () => {
     }
   };
 
-  const pickImage = async () => {
+  const pickImage = async (index = 0) => {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
       allowsEditing: true,
@@ -99,16 +102,20 @@ const ModalScreen = () => {
       quality: 1,
     });
     if (!result.cancelled) {
-      try {
-        setImage(result.uri);
-        setIsLoading(true);
-        const uploadRes = await uploadImage(result);
-        setImageURL(uploadRes);
-        setIsLoading(false);
-      } catch (error) {
-        setImage(null);
-        setImageURL(null);
-        setIsLoading(false);
+      if (index > 0) {
+        console.log("hit optional here");
+      } else {
+        try {
+          setImage(result.uri);
+          setIsLoading(true);
+          const uploadRes = await uploadImage(result);
+          setImageURL(uploadRes);
+          setIsLoading(false);
+        } catch (error) {
+          setImage(null);
+          setImageURL(null);
+          setIsLoading(false);
+        }
       }
     }
   };
@@ -128,24 +135,55 @@ const ModalScreen = () => {
         Step 1: The Profile Pic
       </Text>
       <View style={tw("relative")}>
-        <TouchableOpacity onPress={pickImage}>
-          {isLoading && (
-            <View
-              style={tw(
-                "absolute top-0 left-0 h-full w-full z-10 justify-center items-center"
-              )}
-            >
-              <ActivityIndicator size="large" color="#FFF" />
-            </View>
-          )}
-          {image ? (
-            <Image source={{ uri: image }} style={tw("w-80 h-80")} />
+        {isLoading && (
+          <View
+            style={tw(
+              "absolute top-0 left-0 h-full w-full z-10 justify-center items-center"
+            )}
+          >
+            <ActivityIndicator size="large" color="#FFF" />
+          </View>
+        )}
+        {image ? (
+          isUpdateProfile ? (
+            <>
+              <View style={tw("flex-row")}>
+                <TouchableOpacity onPress={pickImage}>
+                  <Image source={{ uri: image }} style={tw("w-64 h-64")} />
+                </TouchableOpacity>
+                <View style={tw("w-32 h-32 ml-2")}>
+                  <View style={tw("mb-1")}>
+                    <OptionImageUpload pickImage={() => pickImage(1)} />
+                  </View>
+                  <View>
+                    <OptionImageUpload pickImage={() => pickImage(2)} />
+                  </View>
+                </View>
+              </View>
+              <View style={tw("w-full h-32 mt-1 flex-row")}>
+                <View style={tw("w-32 h-32 mr-1")}>
+                  <OptionImageUpload pickImage={() => pickImage(3)} />
+                </View>
+                <View style={tw("w-32 h-32 mr-1")}>
+                  <OptionImageUpload pickImage={() => pickImage(4)} />
+                </View>
+                <View style={tw("w-32 h-32")}>
+                  <OptionImageUpload pickImage={() => pickImage(5)} />
+                </View>
+              </View>
+            </>
           ) : (
+            <TouchableOpacity onPress={pickImage}>
+              <Image source={{ uri: image }} style={tw("w-80 h-80")} />
+            </TouchableOpacity>
+          )
+        ) : (
+          <TouchableOpacity onPress={pickImage}>
             <View style={[tw("p-3 rounded-full mb-3 bg-red-400")]}>
               <Ionicons name="ios-camera" size={34} color="#FFF" />
             </View>
-          )}
-        </TouchableOpacity>
+          </TouchableOpacity>
+        )}
       </View>
 
       <Text style={tw("text-center p-4 font-bold text-red-400")}>
