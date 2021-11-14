@@ -1,0 +1,2 @@
+expo switch device:
+shift+i 
