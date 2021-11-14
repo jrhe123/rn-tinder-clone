@@ -124,7 +124,9 @@ const HomeScreen = () => {
     if (!profiles[cardIndex]) return;
 
     const userSwiped = profiles[cardIndex];
-    const loggedInProfile = await (await getDoc(db, "users", user.uid)).data();
+    const loggedInProfile = await (
+      await getDoc(doc(db, "users", user.uid))
+    ).data();
 
     // Check user swiped on you before
     getDoc(doc(db, "users", userSwiped.id, "swipes", user.uid)).then(
@@ -139,7 +141,7 @@ const HomeScreen = () => {
           const matchId = generateId(user.uid, userSwiped.id);
           setDoc(doc(db, "matches", matchId), {
             users: {
-              [user.uid]: user,
+              [user.uid]: loggedInProfile,
               [userSwiped.id]: userSwiped,
             },
             usersMatched: [user.uid, userSwiped.id],

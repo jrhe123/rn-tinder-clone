@@ -1,10 +1,48 @@
 import React from "react";
-import { View, Text } from "react-native";
+import { View, Text, Image, TouchableOpacity } from "react-native";
+
+import { useNavigation, useRoute } from "@react-navigation/core";
+import tw from "tailwind-rn";
 
 const MatchScreen = () => {
+  const navigation = useNavigation();
+  const { params } = useRoute();
+  const { loggedInProfile, userSwiped } = params;
+
   return (
-    <View>
-      <Text></Text>
+    <View style={[tw("h-full bg-red-500 pt-20"), { opacity: 0.89 }]}>
+      <View style={tw("justify-center items-center px-10 pt-20")}>
+        <Image
+          // resizeMode="center"
+          style={tw("h-20 w-full")}
+          source={require("../assets/tinder/tinder-logo-match.png")}
+        />
+      </View>
+
+      <Text style={tw("text-white text-center mt-5")}>
+        You and {userSwiped.displayName} has liked each other.
+      </Text>
+
+      <View style={tw("flex-row justify-evenly mt-5")}>
+        <Image
+          style={tw("h-32 w-32 rounded-full")}
+          source={{ uri: loggedInProfile.photoURL }}
+        />
+        <Image
+          style={tw("h-32 w-32 rounded-full")}
+          source={{ uri: userSwiped.photoURL }}
+        />
+      </View>
+
+      <TouchableOpacity
+        style={tw("bg-white m-5 px-10 py-8 rounded-full mt-20")}
+        onPress={() => {
+          navigation.goBack();
+          navigation.navigate("Chat");
+        }}
+      >
+        <Text style={tw("text-center")}>Send a Message</Text>
+      </TouchableOpacity>
     </View>
   );
 };
