@@ -1,26 +1,38 @@
 import React, { useState, useLayoutEffect } from "react";
-import { View, Text, Image, TextInput, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  Image,
+  TextInput,
+  TouchableOpacity,
+  ActivityIndicator,
+} from "react-native";
 
+import * as ImagePicker from "expo-image-picker";
+import { Ionicons } from "@expo/vector-icons";
 import useAuth from "../hooks/useAuth";
 import { useNavigation } from "@react-navigation/core";
 import tw from "tailwind-rn";
 import { doc, serverTimestamp, setDoc } from "@firebase/firestore";
 import { db } from "../firebase";
+import uploadImage from "../lib/uploadImage";
 
 const ModalScreen = () => {
   const { user } = useAuth();
   const navigation = useNavigation();
+  const [isLoading, setIsLoading] = useState(false);
   const [image, setImage] = useState(null);
+  const [imageURL, setImageURL] = useState(null);
   const [job, setJob] = useState(null);
   const [age, setAge] = useState(null);
 
-  const incompleteForm = !image || !job || !age;
+  const incompleteForm = !image || !job || !age || !imageURL || isLoading;
 
   const updateUserProfile = () => {
     setDoc(doc(db, "users", user.uid), {
       id: user.uid,
       displayName: user.displayName,
-      photoURL: image,
+      photoURL: imageURL,
       job: job,
       age: age,
       timestamp: serverTimestamp(),
@@ -31,6 +43,28 @@ const ModalScreen = () => {
       .catch((error) => {
         console.log("error: ", error.message);
       });
+  };
+
+  const pickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+    if (!result.cancelled) {
+      try {
+        setImage(result.uri);
+        setIsLoading(true);
+        const uploadRes = await uploadImage(result);
+        setImageURL(uploadRes);
+        setIsLoading(false);
+      } catch (error) {
+        setImage(null);
+        setImageURL(null);
+        setIsLoading(false);
+      }
+    }
   };
 
   return (
@@ -47,12 +81,26 @@ const ModalScreen = () => {
       <Text style={tw("text-center p-4 font-bold text-red-400")}>
         Step 1: The Profile Pic
       </Text>
-      <TextInput
-        value={image}
-        onChangeText={(text) => setImage(text)}
-        style={tw("text-center text-xl pb-2")}
-        placeholder="Enter a Profile Pic URL"
-      />
+      <View style={tw("relative")}>
+        <TouchableOpacity onPress={pickImage}>
+          {isLoading && (
+            <View
+              style={tw(
+                "absolute top-0 left-0 h-full w-full z-10 justify-center items-center"
+              )}
+            >
+              <ActivityIndicator size="large" color="#FFF" />
+            </View>
+          )}
+          {image ? (
+            <Image source={{ uri: image }} style={tw("w-80 h-80")} />
+          ) : (
+            <View style={[tw("p-3 rounded-full mb-3 bg-red-400")]}>
+              <Ionicons name="ios-camera" size={34} color="#FFF" />
+            </View>
+          )}
+        </TouchableOpacity>
+      </View>
 
       <Text style={tw("text-center p-4 font-bold text-red-400")}>
         Step 2: The Job

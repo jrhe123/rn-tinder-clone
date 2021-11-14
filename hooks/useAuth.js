@@ -16,9 +16,9 @@ import { auth } from "../firebase";
 
 // video link
 // https://www.youtube.com/watch?v=qJaFIGjyRms&t=2608s
+// https://console.cloud.google.com/apis/credentials?project=tinder-rn-29674&pli=1
 
 const AuthContext = createContext({});
-// https://console.cloud.google.com/apis/credentials?project=tinder-rn-29674&pli=1
 const config = {
   androidClientId:
     "941684956060-mr3iev04fl09tqdakac3vf7asjarq981.apps.googleusercontent.com",
