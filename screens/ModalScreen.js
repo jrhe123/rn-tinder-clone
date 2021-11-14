@@ -32,8 +32,8 @@ const ModalScreen = () => {
   const [isUpdateProfile, setIsUpdateProfile] = useState(false);
   const [image, setImage] = useState(null);
   const [imageURL, setImageURL] = useState(null);
-  const [optionImages, setOptionImages] = useState([]);
-  const [optionImageURLs, setOptionImageURLs] = useState([]);
+  const [optionImages, setOptionImages] = useState({});
+  const [optionImageURLs, setOptionImageURLs] = useState({});
   const [job, setJob] = useState(null);
   const [age, setAge] = useState(null);
 
@@ -47,9 +47,11 @@ const ModalScreen = () => {
           const loggedInProfile = await (
             await getDoc(doc(db, "users", user.uid))
           ).data();
-          const { photoURL, job, age } = loggedInProfile;
+          const { photoURL, job, age, optionImageURLs } = loggedInProfile;
           setImage(photoURL);
           setImageURL(photoURL);
+          setOptionImages(optionImageURLs);
+          setOptionImageURLs(optionImageURLs);
           setJob(job);
           setAge(age);
           setIsUpdateProfile(true);
@@ -65,6 +67,7 @@ const ModalScreen = () => {
         id: user.uid,
         displayName: user.displayName,
         photoURL: imageURL,
+        optionImageURLs: optionImageURLs,
         job: job,
         age: age,
         timestamp: serverTimestamp(),
@@ -81,6 +84,7 @@ const ModalScreen = () => {
         id: user.uid,
         displayName: user.displayName,
         photoURL: imageURL,
+        optionImageURLs: {},
         job: job,
         age: age,
         timestamp: serverTimestamp(),
@@ -103,7 +107,17 @@ const ModalScreen = () => {
     });
     if (!result.cancelled) {
       if (index > 0) {
-        console.log("hit optional here");
+        try {
+          setOptionImages({ ...optionImages, ...{ [index]: result.uri } });
+          setIsLoading(true);
+          const uploadRes = await uploadImage(result);
+          setOptionImageURLs({ ...optionImageURLs, ...{ [index]: uploadRes } });
+          setIsLoading(false);
+        } catch (error) {
+          setOptionImages({ ...optionImages, ...{ [index]: null } });
+          setOptionImageURLs({ ...optionImageURLs, ...{ [index]: null } });
+          setIsLoading(false);
+        }
       } else {
         try {
           setImage(result.uri);
@@ -118,6 +132,11 @@ const ModalScreen = () => {
         }
       }
     }
+  };
+
+  const deleteImage = (index) => {
+    setOptionImages({ ...optionImages, ...{ [index]: null } });
+    setOptionImageURLs({ ...optionImageURLs, ...{ [index]: null } });
   };
 
   return (
@@ -153,22 +172,42 @@ const ModalScreen = () => {
                 </TouchableOpacity>
                 <View style={tw("w-32 h-32 ml-2")}>
                   <View style={tw("mb-1")}>
-                    <OptionImageUpload pickImage={() => pickImage(1)} />
+                    <OptionImageUpload
+                      source={optionImages["1"]}
+                      pickImage={() => pickImage(1)}
+                      deleteImage={() => deleteImage(1)}
+                    />
                   </View>
                   <View>
-                    <OptionImageUpload pickImage={() => pickImage(2)} />
+                    <OptionImageUpload
+                      source={optionImages["2"]}
+                      pickImage={() => pickImage(2)}
+                      deleteImage={() => deleteImage(2)}
+                    />
                   </View>
                 </View>
               </View>
               <View style={tw("w-full h-32 mt-1 flex-row")}>
                 <View style={tw("w-32 h-32 mr-1")}>
-                  <OptionImageUpload pickImage={() => pickImage(3)} />
+                  <OptionImageUpload
+                    source={optionImages["3"]}
+                    pickImage={() => pickImage(3)}
+                    deleteImage={() => deleteImage(3)}
+                  />
                 </View>
                 <View style={tw("w-32 h-32 mr-1")}>
-                  <OptionImageUpload pickImage={() => pickImage(4)} />
+                  <OptionImageUpload
+                    source={optionImages["4"]}
+                    pickImage={() => pickImage(4)}
+                    deleteImage={() => deleteImage(4)}
+                  />
                 </View>
                 <View style={tw("w-32 h-32")}>
-                  <OptionImageUpload pickImage={() => pickImage(5)} />
+                  <OptionImageUpload
+                    source={optionImages["5"]}
+                    pickImage={() => pickImage(5)}
+                    deleteImage={() => deleteImage(5)}
+                  />
                 </View>
               </View>
             </>
