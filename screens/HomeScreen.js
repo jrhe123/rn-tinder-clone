@@ -6,6 +6,8 @@ import {
   Button,
   TouchableOpacity,
   Image,
+  Animated,
+  Dimensions,
 } from "react-native";
 
 import { useNavigation } from "@react-navigation/core";
@@ -28,11 +30,14 @@ import { db } from "../firebase";
 import generateId from "../lib/generateId";
 
 const HomeScreen = () => {
+  const fadeAnim = useRef(new Animated.Value(0)).current;
   const navigation = useNavigation();
   const { user, logout } = useAuth();
   const [loadingInitial, setLoadingInitial] = useState(true);
   const [isActiveMatch, setIsActiveMatch] = useState(false);
   const [isNewMatch, setIsNewMatch] = useState(false);
+  const [isOpenSuperLike, setIsOpenSuperLike] = useState(false);
+  const [superLike, setSuperLike] = useState(null);
   const [profiles, setProfiles] = useState([]);
   const [matches, setMatches] = useState([]);
   const swipeRef = useRef();
@@ -120,13 +125,17 @@ const HomeScreen = () => {
     setDoc(doc(db, "users", user.uid, "passes", userSwiped.id), userSwiped);
   };
 
-  const swipeRight = async (cardIndex) => {
+  const swipeRight = async (cardIndex, isSuperLike = false) => {
     if (!profiles[cardIndex]) return;
 
     const userSwiped = profiles[cardIndex];
     const loggedInProfile = await (
       await getDoc(doc(db, "users", user.uid))
     ).data();
+
+    if (isSuperLike) {
+      setSuperLike(userSwiped);
+    }
 
     // Check user swiped on you before
     getDoc(doc(db, "users", userSwiped.id, "swipes", user.uid)).then(
@@ -175,8 +184,38 @@ const HomeScreen = () => {
     return numberOfImages;
   };
 
+  const swipeBack = () => {
+    swipeRef.current.swipeBack();
+  };
+
+  const swipeUp = () => {
+    swipeRef.current.swipeTop();
+    fadeIn();
+    setTimeout(() => {
+      fadeOut();
+    }, 1000);
+  };
+
+  const fadeIn = () => {
+    setIsOpenSuperLike(true);
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 200,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const fadeOut = () => {
+    setIsOpenSuperLike(false);
+    Animated.timing(fadeAnim, {
+      toValue: 0,
+      duration: 1000,
+      useNativeDriver: true,
+    }).start();
+  };
+
   return (
-    <SafeAreaView style={tw("flex-1")}>
+    <SafeAreaView style={tw("flex-1 relative")}>
       {/* Header */}
       <View style={tw("flex-row items-center justify-between px-5")}>
         <TouchableOpacity onPress={logout}>
@@ -198,7 +237,7 @@ const HomeScreen = () => {
           {isNewMatch && (
             <View
               style={tw(
-                "justify-center items-center absolute -top-1 -left-1 w-5 h-5 rounded-full bg-purple-600 z-10"
+                "justify-center items-center absolute -top-1 -left-1 w-5 h-5 rounded-full bg-yellow-500 z-10"
               )}
             >
               <Text style={tw("text-white")}>1</Text>
@@ -216,6 +255,50 @@ const HomeScreen = () => {
       </View>
       {/* End of Header */}
 
+      {/* Animation */}
+      <Animated.View
+        style={[
+          tw("flex-1 bg-blue-500 w-full justify-center items-center"),
+          {
+            position: "absolute",
+            top: 0,
+            left: 0,
+            zIndex: 999,
+            opacity: fadeAnim,
+            height: isOpenSuperLike ? Dimensions.get("window").height : 0,
+          },
+        ]}
+      >
+        <View
+          style={[
+            tw("border-white border-4 rounded-2xl p-2 px-4"),
+            {
+              position: "relative",
+              zIndex: 1000,
+            },
+          ]}
+        >
+          <Text
+            style={[tw("text-white"), { fontSize: 40, fontWeight: "bold" }]}
+          >
+            Super Like!
+          </Text>
+          <View style={[tw("absolute -top-7 -right-6")]}>
+            <Ionicons name="ios-star" size={42} color="white" />
+          </View>
+        </View>
+
+        <View>
+          {superLike && (
+            <Image
+              style={tw("h-60 w-60 rounded-full")}
+              source={{ uri: superLike.photoURL }}
+            />
+          )}
+        </View>
+      </Animated.View>
+      {/* End of Animation */}
+
       {/* Swiper */}
       <View style={tw("flex-1 -mt-6")}>
         <Swiper
@@ -226,24 +309,54 @@ const HomeScreen = () => {
           cardIndex={0}
           animateCardOpacity
           verticalSwipe={false}
+          swipeBackCard={true}
           onSwipedLeft={(cardIndex) => swipeLeft(cardIndex)}
           onSwipedRight={(cardIndex) => swipeRight(cardIndex)}
+          onSwipedTop={(cardIndex) => {
+            swipeRight(cardIndex, true);
+          }}
           overlayLabels={{
             left: {
-              title: "NOPE",
+              title: "Nope",
               style: {
                 label: {
                   textAlign: "right",
                   color: "red",
+                  fontWeight: "bold",
+                  fontSize: 42,
                 },
               },
             },
             right: {
-              title: "MATCH",
+              title: "Like",
               style: {
                 label: {
                   textAlign: "left",
                   color: "#4DED30",
+                  fontWeight: "bold",
+                  fontSize: 42,
+                },
+              },
+            },
+            top: {
+              element: (
+                <Text
+                  style={[
+                    tw("text-blue-500"),
+                    {
+                      fontSize: 42,
+                      fontWeight: "bold",
+                    },
+                  ]}
+                >
+                  Super Like
+                </Text>
+              ),
+              style: {
+                wrapper: {
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
                 },
               },
             },
@@ -341,19 +454,40 @@ const HomeScreen = () => {
       <View style={tw("flex flex-row justify-evenly")}>
         <TouchableOpacity
           style={tw(
-            "items-center justify-center rounded-full w-16 h-16 bg-red-200"
+            "items-center justify-center rounded-full w-12 h-12 bg-yellow-400"
           )}
-          onPress={() => swipeRef.current.swipeLeft()}
+          onPress={() => swipeBack()}
         >
-          <Entypo name="cross" size={24} color="red" />
+          <Ionicons
+            style={{ transform: [{ rotateY: "180deg" }] }}
+            name="ios-arrow-redo-sharp"
+            size={24}
+            color="white"
+          />
         </TouchableOpacity>
         <TouchableOpacity
           style={tw(
-            "items-center justify-center rounded-full w-16 h-16 bg-green-200"
+            "items-center justify-center rounded-full w-16 h-16 bg-red-400"
+          )}
+          onPress={() => swipeRef.current.swipeLeft()}
+        >
+          <Entypo name="cross" size={28} color="white" />
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={tw(
+            "items-center justify-center rounded-full w-16 h-16 bg-green-400"
           )}
           onPress={() => swipeRef.current.swipeRight()}
         >
-          <Entypo name="heart" size={24} color="green" />
+          <Entypo name="heart" size={24} color="white" />
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={tw(
+            "items-center justify-center rounded-full w-12 h-12 bg-blue-400"
+          )}
+          onPress={() => swipeUp()}
+        >
+          <Ionicons name="ios-star" size={24} color="white" />
         </TouchableOpacity>
       </View>
       {/* End of Buttons */}
