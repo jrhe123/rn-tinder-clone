@@ -207,6 +207,7 @@ const HomeScreen = () => {
 
   const fadeOut = () => {
     setIsOpenSuperLike(false);
+    setSuperLike(null);
     Animated.timing(fadeAnim, {
       toValue: 0,
       duration: 1000,
@@ -289,12 +290,17 @@ const HomeScreen = () => {
         </View>
 
         <View>
-          {superLike && (
-            <Image
-              style={tw("h-60 w-60 rounded-full")}
-              source={{ uri: superLike.photoURL }}
-            />
-          )}
+          {isOpenSuperLike &&
+            (superLike ? (
+              <View style={tw("h-60 w-60")}>
+                <Image
+                  style={tw("h-60 w-60 rounded-full")}
+                  source={{ uri: superLike.photoURL }}
+                />
+              </View>
+            ) : (
+              <View style={tw("h-60 w-60")} />
+            ))}
         </View>
       </Animated.View>
       {/* End of Animation */}
