@@ -215,6 +215,12 @@ const HomeScreen = () => {
     }).start();
   };
 
+  const openCard = (card) => {
+    navigation.navigate("Detail", {
+      card,
+    });
+  };
+
   return (
     <SafeAreaView style={tw("flex-1 relative")}>
       {/* Header */}
@@ -394,10 +400,15 @@ const HomeScreen = () => {
                     {calculateImages(card)}
                   </Text>
                 </View>
-                <Image
-                  style={tw("absolute top-0 h-full w-full rounded-xl")}
-                  source={{ uri: card.photoURL }}
-                />
+                <TouchableOpacity
+                  style={tw("h-full w-full")}
+                  onPress={() => openCard(card)}
+                >
+                  <Image
+                    style={tw("absolute top-0 h-full w-full rounded-xl")}
+                    source={{ uri: card.photoURL }}
+                  />
+                </TouchableOpacity>
                 <View
                   style={[
                     tw(
