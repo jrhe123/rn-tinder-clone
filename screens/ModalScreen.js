@@ -6,6 +6,7 @@ import {
   TextInput,
   TouchableOpacity,
   ActivityIndicator,
+  ScrollView,
 } from "react-native";
 
 import * as ImagePicker from "expo-image-picker";
@@ -140,7 +141,12 @@ const ModalScreen = () => {
   };
 
   return (
-    <View style={tw("flex-1 items-center pt-1")}>
+    <ScrollView
+      contentContainerStyle={{
+        paddingBottom: 120,
+        alignItems: "center",
+      }}
+    >
       <Image
         style={tw("h-20 w-full")}
         resizeMode="contain"
@@ -257,7 +263,7 @@ const ModalScreen = () => {
       >
         <Text style={tw("text-center text-white text-xl")}>Update Profile</Text>
       </TouchableOpacity>
-    </View>
+    </ScrollView>
   );
 };
 
