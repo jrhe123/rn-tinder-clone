@@ -199,7 +199,7 @@ const HomeScreen = () => {
   const fadeIn = () => {
     setIsOpenSuperLike(true);
     Animated.timing(fadeAnim, {
-      toValue: 1,
+      toValue: 0.8,
       duration: 200,
       useNativeDriver: true,
     }).start();
