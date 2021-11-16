@@ -224,7 +224,7 @@ const HomeScreen = () => {
   return (
     <SafeAreaView style={tw("flex-1 relative")}>
       {/* Header */}
-      <View style={tw("flex-row items-center justify-between px-5")}>
+      <View style={tw("flex-row items-center justify-between px-5 py-3")}>
         <TouchableOpacity onPress={logout}>
           <Image
             style={tw("h-10 w-10 rounded-full")}
@@ -468,7 +468,7 @@ const HomeScreen = () => {
       {/* End of Swiper */}
 
       {/* Buttons */}
-      <View style={tw("flex flex-row justify-evenly")}>
+      <View style={tw("flex flex-row justify-evenly mb-4")}>
         <TouchableOpacity
           style={tw(
             "items-center justify-center rounded-full w-12 h-12 bg-yellow-400"
