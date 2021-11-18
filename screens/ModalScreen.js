@@ -7,6 +7,10 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   ScrollView,
+  KeyboardAvoidingView,
+  TouchableWithoutFeedback,
+  Platform,
+  Keyboard,
 } from "react-native";
 
 import * as ImagePicker from "expo-image-picker";
@@ -51,8 +55,8 @@ const ModalScreen = () => {
           const { photoURL, job, age, optionImageURLs } = loggedInProfile;
           setImage(photoURL);
           setImageURL(photoURL);
-          setOptionImages(optionImageURLs);
-          setOptionImageURLs(optionImageURLs);
+          setOptionImages(optionImageURLs || {});
+          setOptionImageURLs(optionImageURLs || {});
           setJob(job);
           setAge(age);
           setIsUpdateProfile(true);
@@ -141,129 +145,135 @@ const ModalScreen = () => {
   };
 
   return (
-    <ScrollView
-      contentContainerStyle={{
-        paddingBottom: 120,
-        alignItems: "center",
-      }}
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      keyboardVerticalOffset={70}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
-      <Image
-        style={tw("h-20 w-full")}
-        resizeMode="contain"
-        source={require("../assets/tinder/tinder-logo-modal.png")}
-      />
-      <Text style={tw("text-xl text-gray-500 p-2 font-bold")}>
-        Welcome {user.displayName}
-      </Text>
+      <ScrollView
+        contentContainerStyle={{
+          alignItems: "center",
+        }}
+      >
+        <Image
+          style={tw("h-20 w-full")}
+          resizeMode="contain"
+          source={require("../assets/tinder/tinder-logo-modal.png")}
+        />
+        <Text style={tw("text-xl text-gray-500 p-2 font-bold")}>
+          Welcome {user.displayName}
+        </Text>
 
-      <Text style={tw("text-center p-4 font-bold text-red-400")}>
-        Step 1: The Profile Pic
-      </Text>
-      <View style={tw("relative")}>
-        {isLoading && (
-          <View
-            style={tw(
-              "absolute top-0 left-0 h-full w-full z-10 justify-center items-center"
-            )}
-          >
-            <ActivityIndicator size="large" color="#FFF" />
-          </View>
-        )}
-        {image ? (
-          isUpdateProfile ? (
-            <>
-              <View style={tw("flex-row")}>
-                <TouchableOpacity onPress={pickImage}>
-                  <Image source={{ uri: image }} style={tw("w-64 h-64")} />
-                </TouchableOpacity>
-                <View style={tw("w-32 h-32 ml-2")}>
-                  <View style={tw("mb-1")}>
+        <Text style={tw("text-center p-4 font-bold text-red-400")}>
+          Step 1: The Profile Pic
+        </Text>
+        <View style={tw("relative")}>
+          {isLoading && (
+            <View
+              style={tw(
+                "absolute top-0 left-0 h-full w-full z-10 justify-center items-center"
+              )}
+            >
+              <ActivityIndicator size="large" color="#FFF" />
+            </View>
+          )}
+          {image ? (
+            isUpdateProfile ? (
+              <>
+                <View style={tw("flex-row")}>
+                  <TouchableOpacity onPress={pickImage}>
+                    <Image source={{ uri: image }} style={tw("w-64 h-64")} />
+                  </TouchableOpacity>
+                  <View style={tw("w-32 h-32 ml-2")}>
+                    <View style={tw("mb-1")}>
+                      <OptionImageUpload
+                        source={optionImages["1"] || ""}
+                        pickImage={() => pickImage(1)}
+                        deleteImage={() => deleteImage(1)}
+                      />
+                    </View>
+                    <View>
+                      <OptionImageUpload
+                        source={optionImages["2"]}
+                        pickImage={() => pickImage(2)}
+                        deleteImage={() => deleteImage(2)}
+                      />
+                    </View>
+                  </View>
+                </View>
+                <View style={tw("w-full h-32 mt-1 flex-row")}>
+                  <View style={tw("w-32 h-32 mr-1")}>
                     <OptionImageUpload
-                      source={optionImages["1"]}
-                      pickImage={() => pickImage(1)}
-                      deleteImage={() => deleteImage(1)}
+                      source={optionImages["3"]}
+                      pickImage={() => pickImage(3)}
+                      deleteImage={() => deleteImage(3)}
                     />
                   </View>
-                  <View>
+                  <View style={tw("w-32 h-32 mr-1")}>
                     <OptionImageUpload
-                      source={optionImages["2"]}
-                      pickImage={() => pickImage(2)}
-                      deleteImage={() => deleteImage(2)}
+                      source={optionImages["4"]}
+                      pickImage={() => pickImage(4)}
+                      deleteImage={() => deleteImage(4)}
+                    />
+                  </View>
+                  <View style={tw("w-32 h-32")}>
+                    <OptionImageUpload
+                      source={optionImages["5"]}
+                      pickImage={() => pickImage(5)}
+                      deleteImage={() => deleteImage(5)}
                     />
                   </View>
                 </View>
-              </View>
-              <View style={tw("w-full h-32 mt-1 flex-row")}>
-                <View style={tw("w-32 h-32 mr-1")}>
-                  <OptionImageUpload
-                    source={optionImages["3"]}
-                    pickImage={() => pickImage(3)}
-                    deleteImage={() => deleteImage(3)}
-                  />
-                </View>
-                <View style={tw("w-32 h-32 mr-1")}>
-                  <OptionImageUpload
-                    source={optionImages["4"]}
-                    pickImage={() => pickImage(4)}
-                    deleteImage={() => deleteImage(4)}
-                  />
-                </View>
-                <View style={tw("w-32 h-32")}>
-                  <OptionImageUpload
-                    source={optionImages["5"]}
-                    pickImage={() => pickImage(5)}
-                    deleteImage={() => deleteImage(5)}
-                  />
-                </View>
-              </View>
-            </>
+              </>
+            ) : (
+              <TouchableOpacity onPress={pickImage}>
+                <Image source={{ uri: image }} style={tw("w-80 h-80")} />
+              </TouchableOpacity>
+            )
           ) : (
             <TouchableOpacity onPress={pickImage}>
-              <Image source={{ uri: image }} style={tw("w-80 h-80")} />
+              <View style={[tw("p-3 rounded-full mb-3 bg-red-400")]}>
+                <Ionicons name="ios-camera" size={34} color="#FFF" />
+              </View>
             </TouchableOpacity>
-          )
-        ) : (
-          <TouchableOpacity onPress={pickImage}>
-            <View style={[tw("p-3 rounded-full mb-3 bg-red-400")]}>
-              <Ionicons name="ios-camera" size={34} color="#FFF" />
-            </View>
-          </TouchableOpacity>
-        )}
-      </View>
+          )}
+        </View>
 
-      <Text style={tw("text-center p-4 font-bold text-red-400")}>
-        Step 2: The Job
-      </Text>
-      <TextInput
-        value={job}
-        onChangeText={(text) => setJob(text)}
-        style={tw("text-center text-xl pb-2")}
-        placeholder="Enter your occupation"
-      />
+        <Text style={tw("text-center p-4 font-bold text-red-400")}>
+          Step 2: The Job
+        </Text>
+        <TextInput
+          value={job}
+          onChangeText={(text) => setJob(text)}
+          style={tw("text-center text-xl pb-2")}
+          placeholder="Enter your occupation"
+        />
 
-      <Text style={tw("text-center p-4 font-bold text-red-400")}>
-        Step 3: The Age
-      </Text>
-      <TextInput
-        value={age}
-        onChangeText={(text) => setAge(text)}
-        style={tw("text-center text-xl pb-2")}
-        placeholder="Enter your age"
-        keyboardType="numeric"
-        maxLength={2}
-      />
-
-      <TouchableOpacity
-        disabled={incompleteForm}
-        style={[
-          tw("w-64 p-3 rounded-xl absolute bottom-10"),
-          incompleteForm ? tw("bg-gray-400") : tw("bg-red-400"),
-        ]}
-        onPress={updateUserProfile}
-      >
-        <Text style={tw("text-center text-white text-xl")}>Update Profile</Text>
-      </TouchableOpacity>
-    </ScrollView>
+        <Text style={tw("text-center p-4 font-bold text-red-400")}>
+          Step 3: The Age
+        </Text>
+        <TextInput
+          value={age}
+          onChangeText={(text) => setAge(text)}
+          style={tw("text-center text-xl pb-2")}
+          placeholder="Enter your age"
+          keyboardType="numeric"
+          maxLength={2}
+        />
+        <TouchableOpacity
+          disabled={incompleteForm}
+          style={[
+            tw("w-64 p-3 rounded-xl mt-10 mb-10"),
+            incompleteForm ? tw("bg-gray-400") : tw("bg-red-400"),
+          ]}
+          onPress={updateUserProfile}
+        >
+          <Text style={tw("text-center text-white text-xl")}>
+            Update Profile
+          </Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 

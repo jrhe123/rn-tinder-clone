@@ -1,5 +1,12 @@
 import React, { useState, useRef } from "react";
-import { View, SafeAreaView, Dimensions, Image, Text } from "react-native";
+import {
+  View,
+  SafeAreaView,
+  Dimensions,
+  Image,
+  Text,
+  ScrollView,
+} from "react-native";
 
 import { AntDesign, Entypo, Ionicons } from "@expo/vector-icons";
 import Carousel, { Pagination } from "react-native-snap-carousel";
@@ -70,14 +77,19 @@ const DetailScreen = () => {
         inactiveDotScale={0.6}
         tappableDots={true}
       />
-      <View style={tw("px-6")}>
+      <ScrollView
+        contentContainerStyle={{
+          paddingHorizontal: 12,
+          paddingBottom: 120,
+        }}
+      >
         <Ionicons name="newspaper-outline" size={42} color="#FF5864" />
         <Text style={tw("text-2xl pt-4 pb-2 font-semibold")}>
           {capitalize(card.displayName)}
         </Text>
         <Text style={tw("text-lg pb-2")}>Job: {card.job}</Text>
-        <Text style={tw("text-lg pb-2")}>Age: {card.age}</Text>
-      </View>
+        <Text style={tw("text-lg pb-12")}>Age: {card.age}</Text>
+      </ScrollView>
     </SafeAreaView>
   );
 };

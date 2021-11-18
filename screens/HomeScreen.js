@@ -5,6 +5,7 @@ import {
   Text,
   Button,
   TouchableOpacity,
+  TouchableHighLight,
   Image,
   Animated,
   Dimensions,
@@ -37,7 +38,6 @@ const HomeScreen = () => {
   const [isActiveMatch, setIsActiveMatch] = useState(false);
   const [isNewMatch, setIsNewMatch] = useState(false);
   const [isOpenSuperLike, setIsOpenSuperLike] = useState(false);
-  const [superLike, setSuperLike] = useState(null);
   const [profiles, setProfiles] = useState([]);
   const [matches, setMatches] = useState([]);
   const swipeRef = useRef();
@@ -133,10 +133,6 @@ const HomeScreen = () => {
       await getDoc(doc(db, "users", user.uid))
     ).data();
 
-    if (isSuperLike) {
-      setSuperLike(userSwiped);
-    }
-
     // Check user swiped on you before
     getDoc(doc(db, "users", userSwiped.id, "swipes", user.uid)).then(
       (snapshot) => {
@@ -189,9 +185,9 @@ const HomeScreen = () => {
   };
 
   const swipeUp = () => {
-    swipeRef.current.swipeTop();
     fadeIn();
     setTimeout(() => {
+      swipeRef.current.swipeTop();
       fadeOut();
     }, 1000);
   };
@@ -207,7 +203,6 @@ const HomeScreen = () => {
 
   const fadeOut = () => {
     setIsOpenSuperLike(false);
-    setSuperLike(null);
     Animated.timing(fadeAnim, {
       toValue: 0,
       duration: 1000,
@@ -294,20 +289,6 @@ const HomeScreen = () => {
             <Ionicons name="ios-star" size={42} color="white" />
           </View>
         </View>
-
-        <View>
-          {isOpenSuperLike &&
-            (superLike ? (
-              <View style={tw("h-60 w-60")}>
-                <Image
-                  style={tw("h-60 w-60 rounded-full")}
-                  source={{ uri: superLike.photoURL }}
-                />
-              </View>
-            ) : (
-              <View style={tw("h-60 w-60")} />
-            ))}
-        </View>
       </Animated.View>
       {/* End of Animation */}
 
@@ -377,7 +358,7 @@ const HomeScreen = () => {
             card ? (
               <View
                 key={card.id}
-                style={tw("relative bg-white h-3/4 rounded-xl")}
+                style={tw("relative bg-white h-2/3 rounded-xl")}
               >
                 <View
                   style={{
@@ -401,6 +382,7 @@ const HomeScreen = () => {
                   </Text>
                 </View>
                 <TouchableOpacity
+                  activeOpacity={0.9}
                   style={tw("h-full w-full")}
                   onPress={() => openCard(card)}
                 >
@@ -439,7 +421,7 @@ const HomeScreen = () => {
               <View
                 style={[
                   tw(
-                    "relative bg-white h-3/4 rounded-xl justify-center items-center"
+                    "relative bg-white h-2/3 rounded-xl justify-center items-center"
                   ),
                   {
                     shadowColor: "#000",
